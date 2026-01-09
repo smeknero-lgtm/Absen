@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Absensi Guru Piket - SMKN 1 Robatal</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+<header>
+<img src="logo-smkn1-robatal.png" alt="Logo SMKN 1 Robatal">
+<div>
+<h1>ABSENSI GURU PIKET</h1>
+<h2>SMKN 1 ROBATAL</h2>
+</div>
+</header>
+
+<section class="form">
+<label>Tanggal</label>
+<input type="date" id="tanggal">
+
+<label>Petugas</label>
+<input type="text" id="petugas" placeholder="Nama Guru Piket">
+
+<label>Jurusan</label>
+<select id="jurusan">
+<option>RPL</option>
+<option>DPIB</option>
+<option>AK</option>
+<option>TKR</option>
+</select>
+
+<label>Kelas</label>
+<select id="kelas">
+<option>X</option>
+<option>XI</option>
+<option>XII</option>
+</select>
+
+<button onclick="loadSiswa()">Tampilkan Daftar Siswa</button>
+</section>
+
+<table id="tabel">
+<thead>
+<tr><th>No</th><th>Nama Siswa</th><th>Kehadiran</th></tr>
+</thead>
+<tbody></tbody>
+</table>
+
+<button class="simpan" onclick="simpanAbsensi()">Simpan Absensi</button>
+<hr>
+
+<input type="file" id="fileExcel" accept=".csv">
+<button onclick="importExcel()">Import Data Siswa</button>
+<button onclick="exportExcel()">Export Absensi Excel</button>
+
+<p id="info"></p>
+</div>
+<script src="script.js"></script>
+</body>
+</html>
