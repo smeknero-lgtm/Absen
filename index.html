@@ -38,13 +38,13 @@
     <h3>Input Absensi Harian</h3>
 
     <label>Tanggal</label>
-    <input type="date" id="tanggal">
+    <input type="date" id="tanggal" onchange="cekKunciAbsen()">
 
     <label>Petugas</label>
     <input type="text" id="petugas" placeholder="Nama Guru Piket">
 
     <label>Jurusan</label>
-    <select id="jurusan">
+    <select id="jurusan" onchange="cekKunciAbsen()">
       <option>RPL</option>
       <option>DPIB</option>
       <option>AK</option>
@@ -52,7 +52,7 @@
     </select>
 
     <label>Kelas</label>
-    <select id="kelas">
+    <select id="kelas" onchange="cekKunciAbsen()">
       <option>X</option>
       <option>XI</option>
       <option>XII</option>
@@ -119,48 +119,57 @@
   </table>
 
   <hr>
-<section class="form">
-  <h3>Edit Absensi Harian</h3>
 
-  <label>Tanggal</label>
-  <input type="date" id="editTanggal">
+  <!-- EDIT ABSENSI -->
+  <section class="form">
+    <h3>Edit Absensi Harian</h3>
 
-  <label>Jurusan</label>
-  <select id="editJurusan">
-    <option>RPL</option>
-    <option>DPIB</option>
-    <option>AK</option>
-    <option>TKR</option>
-  </select>
+    <label>Tanggal</label>
+    <input type="date" id="editTanggal">
 
-  <label>Kelas</label>
-  <select id="editKelas">
-    <option>X</option>
-    <option>XI</option>
-    <option>XII</option>
-  </select>
+    <label>Jurusan</label>
+    <select id="editJurusan">
+      <option>RPL</option>
+      <option>DPIB</option>
+      <option>AK</option>
+      <option>TKR</option>
+    </select>
 
-  <button onclick="loadEditAbsen()">Tampilkan Absensi</button>
-</section>
+    <label>Kelas</label>
+    <select id="editKelas">
+      <option>X</option>
+      <option>XI</option>
+      <option>XII</option>
+    </select>
 
-<table id="editTable">
-  <thead>
-    <tr>
-      <th>Nama</th>
-      <th>Status</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
+    <button onclick="loadEditAbsen()">Tampilkan Absensi</button>
+  </section>
 
-<button onclick="simpanEditAbsen()">Simpan Perubahan</button>
+  <table id="editTable">
+    <thead>
+      <tr>
+        <th>Nama</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <button onclick="simpanEditAbsen()">Simpan Perubahan</button>
 
 </div>
 
 <script src="script.js?v=2"></script>
 <script>
+  // set tanggal hari ini + cek kunci saat pertama buka
   document.getElementById("tanggal").value =
     new Date().toISOString().slice(0,10);
+
+  setTimeout(() => {
+    if (typeof cekKunciAbsen === "function") {
+      cekKunciAbsen();
+    }
+  }, 300);
 </script>
 
 </body>
