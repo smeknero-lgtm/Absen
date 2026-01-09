@@ -1,12 +1,13 @@
 /*************************************************
- * KONFIGURASI API
+ * KONFIGURASI API GOOGLE APPS SCRIPT
  *************************************************/
-const API_URL = "https://script.google.com/macros/s/AKfycbzSUC1JEBv7wTbSGcPD2iZnUfSlKXZ5_qO5zeR5uj-JpmlvryjKXBrafI4qm87erVqC/exec";
+const API_URL =
+  "https://script.google.com/macros/s/AKfycbzrcBBcvyAdrJEyEQxgDRHd7e9iD9Xe6MeGYowM_kqHQiJ03M2qSxizNJphzCe9WCfE/exec";
 
 let dataSiswa = [];
 
 /*************************************************
- * IMPORT DATA SISWA
+ * IMPORT DATA SISWA (CSV) - NO CORS
  *************************************************/
 function importSiswa() {
   const fileInput = document.getElementById("fileSiswa");
@@ -24,23 +25,26 @@ function importSiswa() {
 
     fetch(API_URL + "?action=import", {
       method: "POST",
+      mode: "no-cors", // 🔑 penting untuk GitHub Pages
       body: JSON.stringify(rows)
-    })
-      .then(() => alert("✅ Data siswa berhasil diimport"))
-      .catch(() => alert("❌ Gagal import data siswa"));
+    });
+
+    alert("✅ Import diproses. Silakan cek Google Sheets.");
+    fileInput.value = "";
   };
+
   reader.readAsText(fileInput.files[0]);
 }
 
 /*************************************************
- * EXPORT ABSENSI
+ * EXPORT ABSENSI (EXCEL)
  *************************************************/
 function exportAbsensi() {
   window.open(API_URL + "?action=export", "_blank");
 }
 
 /*************************************************
- * LOAD DATA SISWA
+ * LOAD DATA SISWA PER JURUSAN & KELAS
  *************************************************/
 function loadSiswa() {
   const jurusan = document.getElementById("jurusan").value;
@@ -50,12 +54,14 @@ function loadSiswa() {
     .then(res => res.json())
     .then(data => {
       dataSiswa = data.filter(d => d[0] === jurusan && d[1] === kelas);
+
       let html = "";
       dataSiswa.forEach((s, i) => {
+        const nama = s[2].toString().replace(/\r/g, "").trim();
         html += `
           <tr>
             <td>${i + 1}</td>
-            <td>${s[2].replace(/\r/g,"")}</td>
+            <td>${nama}</td>
             <td>
               <select id="status${i}">
                 <option>Hadir</option>
@@ -67,61 +73,98 @@ function loadSiswa() {
             </td>
           </tr>`;
       });
+
       document.querySelector("#tabel tbody").innerHTML = html;
+    })
+    .catch(err => {
+      alert("Gagal memuat data siswa");
+      console.error(err);
     });
 }
 
 /*************************************************
- * SIMPAN ABSENSI
+ * SIMPAN ABSENSI (ANTI DOBEL PER KELAS & TANGGAL)
  *************************************************/
 function simpanAbsensi() {
-  if (!dataSiswa.length) return alert("Data siswa belum dimuat");
+  if (!dataSiswa.length) {
+    alert("Data siswa belum dimuat");
+    return;
+  }
+
+  const tanggal = document.getElementById("tanggal").value;
+  const jurusan = document.getElementById("jurusan").value;
+  const kelas = document.getElementById("kelas").value;
+  const petugas = document.getElementById("petugas").value;
+
+  if (!petugas) {
+    alert("Nama petugas wajib diisi");
+    return;
+  }
 
   const payload = dataSiswa.map((s, i) => ({
-    tanggal: tanggal.value,
-    jurusan: jurusan.value,
-    kelas: kelas.value,
-    nama: s[2].replace(/\r/g,""),
-    status: document.getElementById("status"+i).value,
-    petugas: petugas.value
+    tanggal: tanggal,
+    jurusan: jurusan,
+    kelas: kelas,
+    nama: s[2].toString().replace(/\r/g, "").trim(),
+    status: document.getElementById("status" + i).value,
+    petugas: petugas
   }));
 
   fetch(API_URL, {
     method: "POST",
+    mode: "no-cors", // aman untuk GitHub Pages
     body: JSON.stringify(payload)
-  })
-    .then(res => res.text())
-    .then(r => {
-      info.innerText =
-        r === "DUPLIKAT"
-          ? "❌ Absensi sudah pernah diisi"
-          : "✅ Absensi berhasil disimpan";
-    });
+  });
+
+  document.getElementById("info").innerText =
+    "✅ Absensi dikirim. Cek Google Sheets.";
+  document.getElementById("info").style.color = "green";
 }
 
 /*************************************************
- * TAMPILKAN REKAP
+ * TAMPILKAN REKAP BULANAN PER KELAS
  *************************************************/
 function tampilRekap() {
-  const url = `${API_URL}?action=rekap&bulan=${bulan.value}&jurusan=${rekapJurusan.value}&kelas=${rekapKelas.value}`;
+  const bulan = document.getElementById("bulan").value;
+  const jurusan = document.getElementById("rekapJurusan").value;
+  const kelas = document.getElementById("rekapKelas").value;
+
+  if (!bulan) {
+    alert("Pilih bulan terlebih dahulu");
+    return;
+  }
+
+  const url =
+    API_URL +
+    `?action=rekap&bulan=${bulan}&jurusan=${jurusan}&kelas=${kelas}`;
 
   fetch(url)
     .then(res => res.json())
     .then(data => {
       let html = "";
-      Object.keys(data).forEach(nama => {
-        const d = data[nama];
-        html += `
-          <tr>
-            <td>${nama}</td>
-            <td>${d.Hadir}</td>
-            <td>${d.Sakit}</td>
-            <td>${d.Izin}</td>
-            <td>${d.Alpha}</td>
-            <td>${d.Bolos}</td>
-          </tr>`;
-      });
-      rekapTable.querySelector("tbody").innerHTML =
-        html || `<tr><td colspan="6">Tidak ada data</td></tr>`;
+      const namaList = Object.keys(data);
+
+      if (!namaList.length) {
+        html = `<tr><td colspan="6">Tidak ada data</td></tr>`;
+      } else {
+        namaList.forEach(nama => {
+          const d = data[nama];
+          html += `
+            <tr>
+              <td>${nama}</td>
+              <td>${d.Hadir || 0}</td>
+              <td>${d.Sakit || 0}</td>
+              <td>${d.Izin || 0}</td>
+              <td>${d.Alpha || 0}</td>
+              <td>${d.Bolos || 0}</td>
+            </tr>`;
+        });
+      }
+
+      document.querySelector("#rekapTable tbody").innerHTML = html;
+    })
+    .catch(err => {
+      alert("Gagal memuat rekap");
+      console.error(err);
     });
 }
