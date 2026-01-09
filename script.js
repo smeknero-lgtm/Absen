@@ -2,7 +2,7 @@
  * KONFIGURASI API GOOGLE APPS SCRIPT
  *************************************************/
 const API_URL =
-  "https://script.google.com/macros/s/AKfycbzrcBBcvyAdrJEyEQxgDRHd7e9iD9Xe6MeGYowM_kqHQiJ03M2qSxizNJphzCe9WCfE/exec";
+  "https://script.google.com/macros/s/AKfycbzAaG7ZJo8IkopG31A28ZnJszTH0AVJd3hR5a9BwIRokjqrN9eQVwXYYhqvWe7RHPbi/exec";
 
 let dataSiswa = [];
 
