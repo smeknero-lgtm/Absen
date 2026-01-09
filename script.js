@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbzb13t8Gv6eMl5QCrGtWNP_zngryYpYanEP0IBIyGhqpir1FI5NgcXE7mCsin15xtkr/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbx246mMlaedozcd2zQIMCvdorMsMzDYthhJYniUzyDnHR-wL3zCJhRqqZeQEkWb_g/exec";
 
 let dataSiswa = [];
 let editData = [];
