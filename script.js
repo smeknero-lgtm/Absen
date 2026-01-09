@@ -1,7 +1,7 @@
 /*************************************************
  * KONFIGURASI API
  *************************************************/
-const API_URL = "https://script.google.com/macros/s/AKfycbzrcBBcvyAdrJEyEQxgDRHd7e9iD9Xe6MeGYowM_kqHQiJ03M2qSxizNJphzCe9WCfE/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyGQj38BqGzfLyRBf7cFY1Dm1jR50XDx1rRFThsFDSoZO23px8GTkC9BhZ3tM5TmKKO/exec";
 
 let dataSiswa = [];
 
