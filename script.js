@@ -1,170 +1,113 @@
-/*************************************************
- * KONFIGURASI API GOOGLE APPS SCRIPT
- *************************************************/
-const API_URL =
-  "https://script.google.com/macros/s/AKfycbzAaG7ZJo8IkopG31A28ZnJszTH0AVJd3hR5a9BwIRokjqrN9eQVwXYYhqvWe7RHPbi/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzb13t8Gv6eMl5QCrGtWNP_zngryYpYanEP0IBIyGhqpir1FI5NgcXE7mCsin15xtkr/exec";
 
 let dataSiswa = [];
+let editData = [];
 
-/*************************************************
- * IMPORT DATA SISWA (CSV) - NO CORS
- *************************************************/
+// ================= IMPORT SISWA =================
 function importSiswa() {
-  const fileInput = document.getElementById("fileSiswa");
-  if (!fileInput.files.length) {
-    alert("Pilih file CSV terlebih dahulu");
-    return;
-  }
+  const file = fileSiswa.files[0];
+  if (!file) return alert("Pilih file CSV");
 
-  const reader = new FileReader();
-  reader.onload = e => {
+  const r = new FileReader();
+  r.onload = e => {
     const rows = e.target.result
       .split("\n")
-      .map(r => r.split(",").map(c => c.trim()))
-      .filter(r => r.length === 3 && r[0]);
+      .map(x => x.split(",").map(y => y.trim()))
+      .filter(x => x.length === 3 && x[0]);
 
     fetch(API_URL + "?action=import", {
       method: "POST",
-      mode: "no-cors", // 🔑 penting untuk GitHub Pages
+      mode: "no-cors",
       body: JSON.stringify(rows)
     });
 
-    alert("✅ Import diproses. Silakan cek Google Sheets.");
-    fileInput.value = "";
+    alert("Import diproses, cek Google Sheets");
   };
-
-  reader.readAsText(fileInput.files[0]);
+  r.readAsText(file);
 }
 
-/*************************************************
- * EXPORT ABSENSI (EXCEL)
- *************************************************/
-function exportAbsensi() {
-  window.open(API_URL + "?action=export", "_blank");
-}
-
-/*************************************************
- * LOAD DATA SISWA PER JURUSAN & KELAS
- *************************************************/
+// ================= LOAD SISWA =================
 function loadSiswa() {
-  const jurusan = document.getElementById("jurusan").value;
-  const kelas = document.getElementById("kelas").value;
-
   fetch(API_URL)
-    .then(res => res.json())
-    .then(data => {
-      dataSiswa = data.filter(d => d[0] === jurusan && d[1] === kelas);
-
-      let html = "";
-      dataSiswa.forEach((s, i) => {
-        const nama = s[2].toString().replace(/\r/g, "").trim();
-        html += `
-          <tr>
-            <td>${i + 1}</td>
-            <td>${nama}</td>
-            <td>
-              <select id="status${i}">
-                <option>Hadir</option>
-                <option>Sakit</option>
-                <option>Izin</option>
-                <option>Alpha</option>
-                <option>Bolos</option>
-              </select>
-            </td>
-          </tr>`;
-      });
-
-      document.querySelector("#tabel tbody").innerHTML = html;
-    })
-    .catch(err => {
-      alert("Gagal memuat data siswa");
-      console.error(err);
+    .then(r => r.json())
+    .then(d => {
+      dataSiswa = d.filter(x => x[0] === jurusan.value && x[1] === kelas.value);
+      tabel.querySelector("tbody").innerHTML = dataSiswa.map((s,i)=>`
+        <tr>
+          <td>${i+1}</td>
+          <td>${s[2]}</td>
+          <td>
+            <select id="st${i}">
+              <option>Hadir</option><option>Sakit</option>
+              <option>Izin</option><option>Alpha</option><option>Bolos</option>
+            </select>
+          </td>
+        </tr>`).join("");
     });
 }
 
-/*************************************************
- * SIMPAN ABSENSI (ANTI DOBEL PER KELAS & TANGGAL)
- *************************************************/
+// ================= SIMPAN ABSEN (ANTI DOBEL) =================
 function simpanAbsensi() {
-  if (!dataSiswa.length) {
-    alert("Data siswa belum dimuat");
-    return;
-  }
+  fetch(`${API_URL}?action=cekAbsen&tanggal=${tanggal.value}&jurusan=${jurusan.value}&kelas=${kelas.value}`)
+    .then(r=>r.json())
+    .then(r=>{
+      if(r.sudah) return alert("Kelas ini sudah diabsen hari ini");
 
-  const tanggal = document.getElementById("tanggal").value;
-  const jurusan = document.getElementById("jurusan").value;
-  const kelas = document.getElementById("kelas").value;
-  const petugas = document.getElementById("petugas").value;
+      const payload = dataSiswa.map((s,i)=>({
+        tanggal:tanggal.value,
+        jurusan:jurusan.value,
+        kelas:kelas.value,
+        nama:s[2],
+        status:document.getElementById("st"+i).value,
+        petugas:petugas.value
+      }));
 
-  if (!petugas) {
-    alert("Nama petugas wajib diisi");
-    return;
-  }
-
-  const payload = dataSiswa.map((s, i) => ({
-    tanggal: tanggal,
-    jurusan: jurusan,
-    kelas: kelas,
-    nama: s[2].toString().replace(/\r/g, "").trim(),
-    status: document.getElementById("status" + i).value,
-    petugas: petugas
-  }));
-
-  fetch(API_URL, {
-    method: "POST",
-    mode: "no-cors", // aman untuk GitHub Pages
-    body: JSON.stringify(payload)
-  });
-
-  document.getElementById("info").innerText =
-    "✅ Absensi dikirim. Cek Google Sheets.";
-  document.getElementById("info").style.color = "green";
+      fetch(API_URL,{method:"POST",mode:"no-cors",body:JSON.stringify(payload)});
+      alert("Absensi tersimpan");
+    });
 }
 
-/*************************************************
- * TAMPILKAN REKAP BULANAN PER KELAS
- *************************************************/
-function tampilRekap() {
-  const bulan = document.getElementById("bulan").value;
-  const jurusan = document.getElementById("rekapJurusan").value;
-  const kelas = document.getElementById("rekapKelas").value;
-
-  if (!bulan) {
-    alert("Pilih bulan terlebih dahulu");
-    return;
-  }
-
-  const url =
-    API_URL +
-    `?action=rekap&bulan=${bulan}&jurusan=${jurusan}&kelas=${kelas}`;
-
-  fetch(url)
-    .then(res => res.json())
-    .then(data => {
-      let html = "";
-      const namaList = Object.keys(data);
-
-      if (!namaList.length) {
-        html = `<tr><td colspan="6">Tidak ada data</td></tr>`;
-      } else {
-        namaList.forEach(nama => {
-          const d = data[nama];
-          html += `
-            <tr>
-              <td>${nama}</td>
-              <td>${d.Hadir || 0}</td>
-              <td>${d.Sakit || 0}</td>
-              <td>${d.Izin || 0}</td>
-              <td>${d.Alpha || 0}</td>
-              <td>${d.Bolos || 0}</td>
-            </tr>`;
-        });
-      }
-
-      document.querySelector("#rekapTable tbody").innerHTML = html;
-    })
-    .catch(err => {
-      alert("Gagal memuat rekap");
-      console.error(err);
+// ================= REKAP =================
+function tampilRekap(){
+  fetch(`${API_URL}?action=rekap&bulan=${bulan.value}&jurusan=${rekapJurusan.value}&kelas=${rekapKelas.value}`)
+    .then(r=>r.json())
+    .then(d=>{
+      rekapTable.querySelector("tbody").innerHTML =
+        Object.keys(d).map(n=>`
+        <tr>
+          <td>${n}</td>
+          <td>${d[n].Hadir}</td><td>${d[n].Sakit}</td>
+          <td>${d[n].Izin}</td><td>${d[n].Alpha}</td><td>${d[n].Bolos}</td>
+        </tr>`).join("");
     });
+}
+
+// ================= EDIT ABSEN =================
+function loadEditAbsen(){
+  fetch(`${API_URL}?action=getAbsen&tanggal=${editTanggal.value}&jurusan=${editJurusan.value}&kelas=${editKelas.value}`)
+    .then(r=>r.json())
+    .then(d=>{
+      editData=d;
+      editTable.querySelector("tbody").innerHTML=d.map((x,i)=>`
+        <tr>
+          <td>${x.nama}</td>
+          <td>
+            <select id="es${i}">
+              <option ${x.status=="Hadir"?"selected":""}>Hadir</option>
+              <option ${x.status=="Sakit"?"selected":""}>Sakit</option>
+              <option ${x.status=="Izin"?"selected":""}>Izin</option>
+              <option ${x.status=="Alpha"?"selected":""}>Alpha</option>
+              <option ${x.status=="Bolos"?"selected":""}>Bolos</option>
+            </select>
+          </td>
+        </tr>`).join("");
+    });
+}
+
+function simpanEditAbsen(){
+  fetch(API_URL+"?action=updateAbsen",{
+    method:"POST",mode:"no-cors",
+    body:JSON.stringify(editData.map((x,i)=>({row:x.row,status:document.getElementById("es"+i).value})))
+  });
+  alert("Perubahan disimpan");
 }
