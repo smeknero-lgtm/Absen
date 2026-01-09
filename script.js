@@ -1,48 +1,150 @@
-const API_URL="https://script.google.com/macros/s/AKfycbz3hYpCJ7nhfQLeVU9PWqYwWM0jGVki13A4wJceb7oaz5lUk0OjYIClR554PQy5Woin/exec";
-let dataSiswa=[];
-document.getElementById("tanggal").value=new Date().toISOString().slice(0,10);
+/*************************************************
+ * KONFIGURASI API
+ *************************************************/
+const API_URL = "https://script.google.com/macros/s/AKfycbzrcBBcvyAdrJEyEQxgDRHd7e9iD9Xe6MeGYowM_kqHQiJ03M2qSxizNJphzCe9WCfE/exec";
 
-function loadSiswa(){
-fetch(API_URL).then(r=>r.json()).then(data=>{
-const j=jurusan.value,k=kelas.value;
-dataSiswa=data.filter(d=>d[0]==j && d[1]==k);
-let h="";
-dataSiswa.forEach((s,i)=>{
-h+=`<tr><td>${i+1}</td><td>${s[2]}</td>
-<td><select id="st${i}">
-<option>Hadir</option><option>Izin</option>
-<option>Sakit</option><option>Alpha</option><option>Bolos</option>
-</select></td></tr>`});
-document.querySelector("tbody").innerHTML=h;
-})}
+let dataSiswa = [];
 
-function simpanAbsensi(){
-const t=tanggal.value,j=jurusan.value,k=kelas.value,p=petugas.value;
-const payload=dataSiswa.map((s,i)=>({
-tanggal:t,jurusan:j,kelas:k,nama:s[2],
-status:document.getElementById("st"+i).value,petugas:p
-}));
-fetch(API_URL,{method:"POST",body:JSON.stringify(payload)})
-.then(r=>r.text()).then(res=>{
-info.innerText=res==="DUPLIKAT"
-?"❌ Absensi kelas ini sudah diisi hari ini"
-:"✅ Absensi berhasil disimpan";
-});
+/*************************************************
+ * LOAD DATA SISWA PER KELAS
+ *************************************************/
+function loadSiswa() {
+  const jurusan = document.getElementById("jurusan").value;
+  const kelas = document.getElementById("kelas").value;
+
+  fetch(API_URL)
+    .then(res => res.json())
+    .then(data => {
+      // filter siswa sesuai jurusan & kelas
+      dataSiswa = data.filter(d =>
+        d[0] === jurusan && d[1] === kelas
+      );
+
+      let html = "";
+      dataSiswa.forEach((s, i) => {
+        const nama = s[2].toString().replace(/\r/g, "").trim();
+        html += `
+          <tr>
+            <td>${i + 1}</td>
+            <td>${nama}</td>
+            <td>
+              <select id="status${i}">
+                <option>Hadir</option>
+                <option>Sakit</option>
+                <option>Izin</option>
+                <option>Alpha</option>
+                <option>Bolos</option>
+              </select>
+            </td>
+          </tr>
+        `;
+      });
+
+      document.querySelector("#tabel tbody").innerHTML = html;
+    })
+    .catch(err => {
+      alert("Gagal memuat data siswa");
+      console.error(err);
+    });
 }
 
-function exportExcel(){
-fetch(API_URL+"?action=export").then(r=>r.text())
-.then(url=>window.open(url,"_blank"));
+/*************************************************
+ * SIMPAN ABSENSI (ANTI DOBEL)
+ *************************************************/
+function simpanAbsensi() {
+  if (dataSiswa.length === 0) {
+    alert("Data siswa belum ditampilkan");
+    return;
+  }
+
+  const tanggal = document.getElementById("tanggal").value;
+  const jurusan = document.getElementById("jurusan").value;
+  const kelas = document.getElementById("kelas").value;
+  const petugas = document.getElementById("petugas").value;
+
+  if (!petugas) {
+    alert("Nama petugas wajib diisi");
+    return;
+  }
+
+  const payload = dataSiswa.map((s, i) => ({
+    tanggal: tanggal,
+    jurusan: jurusan,
+    kelas: kelas,
+    nama: s[2].toString().replace(/\r/g, "").trim(),
+    status: document.getElementById("status" + i).value,
+    petugas: petugas
+  }));
+
+  fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify(payload)
+  })
+    .then(res => res.text())
+    .then(res => {
+      const info = document.getElementById("info");
+      if (res === "DUPLIKAT") {
+        info.innerText = "❌ Absensi kelas ini sudah diisi hari ini";
+        info.style.color = "red";
+      } else {
+        info.innerText = "✅ Absensi berhasil disimpan";
+        info.style.color = "green";
+      }
+    })
+    .catch(err => {
+      alert("Gagal menyimpan absensi");
+      console.error(err);
+    });
 }
 
-function importExcel(){
-const f=document.getElementById("fileExcel").files[0];
-if(!f)return alert("Pilih file CSV");
-const r=new FileReader();
-r.onload=e=>{
-const rows=e.target.result.split("\n").slice(1).map(x=>x.split(","));
-fetch(API_URL+"?action=import",{method:"POST",body:JSON.stringify(rows)})
-.then(()=>alert("✅ Data siswa berhasil diimport"));
-};
-r.readAsText(f);
+/*************************************************
+ * TAMPILKAN REKAP PER KELAS & BULAN
+ *************************************************/
+function tampilRekap() {
+  const bulan = document.getElementById("bulan").value;
+  const jurusan = document.getElementById("rekapJurusan").value;
+  const kelas = document.getElementById("rekapKelas").value;
+
+  if (!bulan) {
+    alert("Pilih bulan terlebih dahulu");
+    return;
+  }
+
+  const url = `${API_URL}?action=rekap&bulan=${bulan}&jurusan=${jurusan}&kelas=${kelas}`;
+
+  fetch(url)
+    .then(res => res.json())
+    .then(data => {
+      let html = "";
+
+      const namaSiswa = Object.keys(data);
+      if (namaSiswa.length === 0) {
+        html = `
+          <tr>
+            <td colspan="6" style="text-align:center">
+              Tidak ada data absensi
+            </td>
+          </tr>`;
+      } else {
+        namaSiswa.forEach(nama => {
+          const d = data[nama];
+          html += `
+            <tr>
+              <td>${nama}</td>
+              <td>${d.Hadir || 0}</td>
+              <td>${d.Sakit || 0}</td>
+              <td>${d.Izin || 0}</td>
+              <td>${d.Alpha || 0}</td>
+              <td>${d.Bolos || 0}</td>
+            </tr>
+          `;
+        });
+      }
+
+      document.querySelector("#rekapTable tbody").innerHTML = html;
+    })
+    .catch(err => {
+      alert("Gagal memuat rekap");
+      console.error(err);
+    });
 }
