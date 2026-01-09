@@ -48,24 +48,45 @@ function loadSiswa() {
 
 // ================= SIMPAN ABSEN (ANTI DOBEL) =================
 function simpanAbsensi() {
-  fetch(`${API_URL}?action=cekAbsen&tanggal=${tanggal.value}&jurusan=${jurusan.value}&kelas=${kelas.value}`)
-    .then(r=>r.json())
-    .then(r=>{
-      if(r.sudah) return alert("Kelas ini sudah diabsen hari ini");
+  const btn = document.querySelector(".simpan");
 
-      const payload = dataSiswa.map((s,i)=>({
-        tanggal:tanggal.value,
-        jurusan:jurusan.value,
-        kelas:kelas.value,
-        nama:s[2],
-        status:document.getElementById("st"+i).value,
-        petugas:petugas.value
-      }));
+  if (!dataSiswa.length) {
+    alert("Data siswa belum dimuat");
+    return;
+  }
 
-      fetch(API_URL,{method:"POST",mode:"no-cors",body:JSON.stringify(payload)});
-      alert("Absensi tersimpan");
-    });
+  const tanggal = document.getElementById("tanggal").value;
+  const jurusan = document.getElementById("jurusan").value;
+  const kelas = document.getElementById("kelas").value;
+  const petugas = document.getElementById("petugas").value;
+
+  if (!petugas) {
+    alert("Nama petugas wajib diisi");
+    return;
+  }
+
+  // 🔒 KUNCI TOMBOL LANGSUNG
+  btn.disabled = true;
+  btn.innerText = "Absensi Terkunci";
+
+  const payload = dataSiswa.map((s, i) => ({
+    tanggal,
+    jurusan,
+    kelas,
+    nama: s[2],
+    status: document.getElementById("st" + i).value,
+    petugas
+  }));
+
+  fetch(API_URL, {
+    method: "POST",
+    mode: "no-cors",
+    body: JSON.stringify(payload)
+  });
+
+  alert("✅ Absensi tersimpan (1x saja)");
 }
+
 
 // ================= REKAP =================
 function tampilRekap(){
