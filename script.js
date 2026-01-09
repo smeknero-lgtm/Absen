@@ -3,10 +3,38 @@ const API_URL = "https://script.google.com/macros/s/AKfycbx246mMlaedozcd2zQIMCvd
 let dataSiswa = [];
 let editData = [];
 
+/* ================= RESET TOMBOL ================= */
+function resetTombol() {
+  const btn = document.querySelector(".simpan");
+  btn.disabled = false;
+  btn.innerText = "Simpan Absensi";
+}
+
+/* ================= CEK KUNCI ABSEN ================= */
+function cekKunciAbsen() {
+  const btn = document.querySelector(".simpan");
+  const tgl = tanggal.value;
+  const jrs = jurusan.value;
+  const kls = kelas.value;
+
+  resetTombol(); // ⬅️ PENTING: buka dulu
+
+  if (!tgl || !jrs || !kls) return;
+
+  fetch(`${API_URL}?action=cekAbsen&tanggal=${tgl}&jurusan=${jrs}&kelas=${kls}`)
+    .then(r => r.json())
+    .then(r => {
+      if (r.sudah) {
+        btn.disabled = true;
+        btn.innerText = "Absensi Terkunci";
+      }
+    });
+}
+
 /* ================= IMPORT DATA SISWA ================= */
 function importSiswa() {
   const file = fileSiswa.files[0];
-  if (!file) return alert("Pilih file CSV terlebih dahulu");
+  if (!file) return alert("Pilih file CSV");
 
   const reader = new FileReader();
   reader.onload = e => {
@@ -21,13 +49,15 @@ function importSiswa() {
       body: JSON.stringify(rows)
     });
 
-    alert("Import diproses, silakan cek Google Sheets");
+    alert("Import diproses, cek Google Sheets");
   };
   reader.readAsText(file);
 }
 
 /* ================= LOAD SISWA ================= */
 function loadSiswa() {
+  resetTombol(); // ⬅️ BUKA TOMBOL SAAT GANTI KELAS
+
   fetch(API_URL)
     .then(r => r.json())
     .then(d => {
@@ -36,49 +66,23 @@ function loadSiswa() {
       );
 
       tabel.querySelector("tbody").innerHTML = dataSiswa
-        .map(
-          (s, i) => `
-        <tr>
-          <td>${i + 1}</td>
-          <td>${s[2]}</td>
-          <td>
-            <select id="st${i}">
-              <option>Hadir</option>
-              <option>Sakit</option>
-              <option>Izin</option>
-              <option>Alpha</option>
-              <option>Bolos</option>
-            </select>
-          </td>
-        </tr>`
-        )
-        .join("");
+        .map((s, i) => `
+          <tr>
+            <td>${i + 1}</td>
+            <td>${s[2]}</td>
+            <td>
+              <select id="st${i}">
+                <option>Hadir</option>
+                <option>Sakit</option>
+                <option>Izin</option>
+                <option>Alpha</option>
+                <option>Bolos</option>
+              </select>
+            </td>
+          </tr>
+        `).join("");
 
-      cekKunciAbsen(); // cek ulang setiap ganti kelas
-    });
-}
-
-/* ================= CEK KUNCI ABSEN ================= */
-function cekKunciAbsen() {
-  const btn = document.querySelector(".simpan");
-  const tgl = tanggal.value;
-  const jrs = jurusan.value;
-  const kls = kelas.value;
-
-  if (!tgl || !jrs || !kls) return;
-
-  fetch(
-    `${API_URL}?action=cekAbsen&tanggal=${tgl}&jurusan=${jrs}&kelas=${kls}`
-  )
-    .then(r => r.json())
-    .then(r => {
-      if (r.sudah) {
-        btn.disabled = true;
-        btn.innerText = "Absensi Terkunci";
-      } else {
-        btn.disabled = false;
-        btn.innerText = "Simpan Absensi";
-      }
+      cekKunciAbsen(); // ⬅️ CEK SETELAH DATA MUNCUL
     });
 }
 
@@ -113,57 +117,49 @@ function simpanAbsensi() {
     body: JSON.stringify(payload)
   });
 
-  alert("✅ Absensi berhasil disimpan");
+  alert("✅ Absensi tersimpan");
 }
 
-/* ================= REKAP BULANAN ================= */
+/* ================= REKAP ================= */
 function tampilRekap() {
-  fetch(
-    `${API_URL}?action=rekap&bulan=${bulan.value}&jurusan=${rekapJurusan.value}&kelas=${rekapKelas.value}`
-  )
+  fetch(`${API_URL}?action=rekap&bulan=${bulan.value}&jurusan=${rekapJurusan.value}&kelas=${rekapKelas.value}`)
     .then(r => r.json())
     .then(d => {
       rekapTable.querySelector("tbody").innerHTML = Object.keys(d)
-        .map(
-          n => `
-        <tr>
-          <td>${n}</td>
-          <td>${d[n].Hadir}</td>
-          <td>${d[n].Sakit}</td>
-          <td>${d[n].Izin}</td>
-          <td>${d[n].Alpha}</td>
-          <td>${d[n].Bolos}</td>
-        </tr>`
-        )
-        .join("");
+        .map(n => `
+          <tr>
+            <td>${n}</td>
+            <td>${d[n].Hadir}</td>
+            <td>${d[n].Sakit}</td>
+            <td>${d[n].Izin}</td>
+            <td>${d[n].Alpha}</td>
+            <td>${d[n].Bolos}</td>
+          </tr>
+        `).join("");
     });
 }
 
 /* ================= EDIT ABSENSI ================= */
 function loadEditAbsen() {
-  fetch(
-    `${API_URL}?action=getAbsen&tanggal=${editTanggal.value}&jurusan=${editJurusan.value}&kelas=${editKelas.value}`
-  )
+  fetch(`${API_URL}?action=getAbsen&tanggal=${editTanggal.value}&jurusan=${editJurusan.value}&kelas=${editKelas.value}`)
     .then(r => r.json())
     .then(d => {
       editData = d;
       editTable.querySelector("tbody").innerHTML = d
-        .map(
-          (x, i) => `
-        <tr>
-          <td>${x.nama}</td>
-          <td>
-            <select id="es${i}">
-              <option ${x.status === "Hadir" ? "selected" : ""}>Hadir</option>
-              <option ${x.status === "Sakit" ? "selected" : ""}>Sakit</option>
-              <option ${x.status === "Izin" ? "selected" : ""}>Izin</option>
-              <option ${x.status === "Alpha" ? "selected" : ""}>Alpha</option>
-              <option ${x.status === "Bolos" ? "selected" : ""}>Bolos</option>
-            </select>
-          </td>
-        </tr>`
-        )
-        .join("");
+        .map((x, i) => `
+          <tr>
+            <td>${x.nama}</td>
+            <td>
+              <select id="es${i}">
+                <option ${x.status === "Hadir" ? "selected" : ""}>Hadir</option>
+                <option ${x.status === "Sakit" ? "selected" : ""}>Sakit</option>
+                <option ${x.status === "Izin" ? "selected" : ""}>Izin</option>
+                <option ${x.status === "Alpha" ? "selected" : ""}>Alpha</option>
+                <option ${x.status === "Bolos" ? "selected" : ""}>Bolos</option>
+              </select>
+            </td>
+          </tr>
+        `).join("");
     });
 }
 
@@ -179,10 +175,10 @@ function simpanEditAbsen() {
     )
   });
 
-  alert("✅ Perubahan absensi disimpan");
+  alert("✅ Perubahan disimpan");
 }
 
-/* ================= EXPORT EXCEL ================= */
+/* ================= EXPORT ================= */
 function exportAbsensi() {
   fetch(API_URL + "?action=export")
     .then(r => r.text())
