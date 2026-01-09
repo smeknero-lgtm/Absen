@@ -118,6 +118,43 @@
     <tbody></tbody>
   </table>
 
+  <hr>
+<section class="form">
+  <h3>Edit Absensi Harian</h3>
+
+  <label>Tanggal</label>
+  <input type="date" id="editTanggal">
+
+  <label>Jurusan</label>
+  <select id="editJurusan">
+    <option>RPL</option>
+    <option>DPIB</option>
+    <option>AK</option>
+    <option>TKR</option>
+  </select>
+
+  <label>Kelas</label>
+  <select id="editKelas">
+    <option>X</option>
+    <option>XI</option>
+    <option>XII</option>
+  </select>
+
+  <button onclick="loadEditAbsen()">Tampilkan Absensi</button>
+</section>
+
+<table id="editTable">
+  <thead>
+    <tr>
+      <th>Nama</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<button onclick="simpanEditAbsen()">Simpan Perubahan</button>
+
 </div>
 
 <script src="script.js?v=2"></script>
