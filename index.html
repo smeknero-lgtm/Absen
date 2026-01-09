@@ -19,7 +19,21 @@
     </div>
   </header>
 
-  <!-- FORM ABSENSI -->
+  <!-- IMPORT EXPORT -->
+  <section class="form">
+    <h3>Import / Export Data</h3>
+
+    <label>Import Data Siswa (CSV)</label>
+    <input type="file" id="fileSiswa" accept=".csv">
+    <button onclick="importSiswa()">Import Data Siswa</button>
+
+    <br><br>
+    <button onclick="exportAbsensi()">Export Absensi (Excel)</button>
+  </section>
+
+  <hr>
+
+  <!-- ABSENSI -->
   <section class="form">
     <h3>Input Absensi Harian</h3>
 
@@ -107,9 +121,7 @@
 </div>
 
 <script src="script.js"></script>
-
 <script>
-  // set tanggal hari ini otomatis
   document.getElementById("tanggal").value =
     new Date().toISOString().slice(0,10);
 </script>
