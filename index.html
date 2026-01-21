@@ -2,41 +2,18 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Absensi Guru Piket - SMKN 1 ROBATAL</title>
+  <title>Absensi Guru Piket SMKN 1 Robatal</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
+
 <div class="container">
+  <h2>ABSENSI GURU PIKET</h2>
+  <h3>SMKN 1 ROBATAL</h3>
 
-  <!-- HEADER -->
-  <header>
-    <img src="logo-smkn1-robatal.png" alt="Logo SMKN 1 Robatal">
-    <div>
-      <h1>ABSENSI GURU PIKET</h1>
-      <h2>SMKN 1 ROBATAL</h2>
-    </div>
-  </header>
-
-  <!-- IMPORT EXPORT -->
+  <!-- INPUT ABSENSI -->
   <section class="form">
-    <h3>Import / Export Data</h3>
-
-    <label>Import Data Siswa (CSV)</label>
-    <input type="file" id="fileSiswa" accept=".csv">
-    <button onclick="importSiswa()">Import Data Siswa</button>
-
-    <br><br>
-    <button onclick="exportAbsensi()">Export Absensi (Excel)</button>
-  </section>
-
-  <hr>
-
-  <!-- ABSENSI -->
-  <section class="form">
-    <h3>Input Absensi Harian</h3>
-
     <label>Tanggal</label>
     <input type="date" id="tanggal" onchange="cekKunciAbsen()">
 
@@ -64,112 +41,67 @@
   <!-- TABEL ABSENSI -->
   <table id="tabel">
     <thead>
-      <tr>
-        <th>No</th>
-        <th>Nama Siswa</th>
-        <th>Status Kehadiran</th>
-      </tr>
+      <tr><th>No</th><th>Nama Siswa</th><th>Status</th></tr>
     </thead>
     <tbody></tbody>
   </table>
 
   <button class="simpan" onclick="simpanAbsensi()">Simpan Absensi</button>
-  <p id="info"></p>
 
   <hr>
 
   <!-- REKAP -->
-  <section class="form">
-    <h3>Rekap Absensi Per Kelas</h3>
+  <h3>Rekap Bulanan</h3>
+  <input type="month" id="bulan">
+  <select id="rekapJurusan">
+    <option>RPL</option><option>DPIB</option><option>AK</option><option>TKR</option>
+  </select>
+  <select id="rekapKelas">
+    <option>X</option><option>XI</option><option>XII</option>
+  </select>
+  <button onclick="tampilRekap()">Tampilkan Rekap</button>
 
-    <label>Bulan</label>
-    <input type="month" id="bulan">
-
-    <label>Jurusan</label>
-    <select id="rekapJurusan">
-      <option>RPL</option>
-      <option>DPIB</option>
-      <option>AK</option>
-      <option>TKR</option>
-    </select>
-
-    <label>Kelas</label>
-    <select id="rekapKelas">
-      <option>X</option>
-      <option>XI</option>
-      <option>XII</option>
-    </select>
-
-    <button onclick="tampilRekap()">Tampilkan Rekap</button>
-  </section>
-
-  <!-- TABEL REKAP -->
   <table id="rekapTable">
     <thead>
-      <tr>
-        <th>Nama Siswa</th>
-        <th>Hadir</th>
-        <th>Sakit</th>
-        <th>Izin</th>
-        <th>Alpha</th>
-        <th>Bolos</th>
-      </tr>
+      <tr><th>Nama</th><th>H</th><th>S</th><th>I</th><th>A</th><th>B</th></tr>
     </thead>
     <tbody></tbody>
   </table>
 
   <hr>
 
-  <!-- EDIT ABSENSI -->
-  <section class="form">
-    <h3>Edit Absensi Harian</h3>
+  <!-- GRAFIK -->
+  <h3>Grafik & Persentase Kehadiran</h3>
+  <input type="month" id="grafikBulan">
+  <select id="grafikJurusan">
+    <option>RPL</option><option>DPIB</option><option>AK</option><option>TKR</option>
+  </select>
+  <select id="grafikKelas">
+    <option>X</option><option>XI</option><option>XII</option>
+  </select>
+  <button onclick="tampilkanGrafik()">Tampilkan Grafik</button>
+  <div id="persentaseBox"></div>
+  <canvas id="grafikAbsensi"></canvas>
 
-    <label>Tanggal</label>
-    <input type="date" id="editTanggal">
+  <hr>
 
-    <label>Jurusan</label>
-    <select id="editJurusan">
-      <option>RPL</option>
-      <option>DPIB</option>
-      <option>AK</option>
-      <option>TKR</option>
-    </select>
-
-    <label>Kelas</label>
-    <select id="editKelas">
-      <option>X</option>
-      <option>XI</option>
-      <option>XII</option>
-    </select>
-
-    <button onclick="loadEditAbsen()">Tampilkan Absensi</button>
-  </section>
-
-  <table id="editTable">
-    <thead>
-      <tr>
-        <th>Nama</th>
-        <th>Status</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-
-  <button onclick="simpanEditAbsen()">Simpan Perubahan</button>
+  <!-- LAPORAN -->
+  <h3>Download Laporan Harian</h3>
+  <input type="date" id="lapTanggal">
+  <select id="lapJurusan">
+    <option>RPL</option><option>DPIB</option><option>AK</option><option>TKR</option>
+  </select>
+  <select id="lapKelas">
+    <option>X</option><option>XI</option><option>XII</option>
+  </select>
+  <button onclick="downloadLaporan()">Download Laporan</button>
 
 </div>
 
-<script src="script.js?v=2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="script.js"></script>
 <script>
-  // set tanggal hari ini + cek kunci saat pertama buka
-  document.getElementById("tanggal").value =
-    new Date().toISOString().slice(0,10);
-
-  setTimeout(() => {
-    if (typeof cekKunciAbsen === "function") {
-      cekKunciAbsen();
-    }
-  }, 300);
+document.getElementById("tanggal").value = new Date().toISOString().slice(0,10);
 </script>
 
 </body>
