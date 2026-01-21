@@ -1,113 +1,65 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbx246mMlaedozcd2zQIMCvdorMsMzDYthhJYniUzyDnHR-wL3zCJhRqqZeQEkWb_g/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxxhxELvlM9JP_9BlQAfVGf6_w4A_ROMJ9AGR3qvrr7jnQpfkGPsXGBTkdBZLc5gFHA/exec";
 
 let dataSiswa = [];
-let editData = [];
+let chartAbsensi = null;
 
-/* ================= RESET TOMBOL ================= */
-function resetTombol() {
-  const btn = document.querySelector(".simpan");
-  btn.disabled = false;
-  btn.innerText = "Simpan Absensi";
+// ================= LOAD SISWA =================
+function loadSiswa() {
+  fetch(API_URL)
+    .then(r => r.json())
+    .then(d => {
+      dataSiswa = d.filter(x =>
+        x[0] === jurusan.value && x[1] === kelas.value
+      );
+
+      tabel.querySelector("tbody").innerHTML = dataSiswa.map((s,i)=>`
+        <tr>
+          <td>${i+1}</td>
+          <td>${s[2]}</td>
+          <td>
+            <select id="st${i}">
+              <option>Hadir</option>
+              <option>Sakit</option>
+              <option>Izin</option>
+              <option>Alpha</option>
+              <option>Bolos</option>
+            </select>
+          </td>
+        </tr>`).join("");
+
+      cekKunciAbsen();
+    });
 }
 
-/* ================= CEK KUNCI ABSEN ================= */
+// ================= CEK KUNCI =================
 function cekKunciAbsen() {
-  const btn = document.querySelector(".simpan");
-  const tgl = tanggal.value;
-  const jrs = jurusan.value;
-  const kls = kelas.value;
-
-  resetTombol(); // ⬅️ PENTING: buka dulu
-
-  if (!tgl || !jrs || !kls) return;
-
-  fetch(`${API_URL}?action=cekAbsen&tanggal=${tgl}&jurusan=${jrs}&kelas=${kls}`)
+  fetch(`${API_URL}?action=cekAbsen&tanggal=${tanggal.value}&jurusan=${jurusan.value}&kelas=${kelas.value}`)
     .then(r => r.json())
     .then(r => {
+      const btn = document.querySelector(".simpan");
       if (r.sudah) {
         btn.disabled = true;
-        btn.innerText = "Absensi Terkunci";
+        btn.innerText = "Terkunci";
+      } else {
+        btn.disabled = false;
+        btn.innerText = "Simpan Absensi";
       }
     });
 }
 
-/* ================= IMPORT DATA SISWA ================= */
-function importSiswa() {
-  const file = fileSiswa.files[0];
-  if (!file) return alert("Pilih file CSV");
-
-  const reader = new FileReader();
-  reader.onload = e => {
-    const rows = e.target.result
-      .split("\n")
-      .map(r => r.split(",").map(x => x.trim()))
-      .filter(r => r.length === 3 && r[0]);
-
-    fetch(API_URL + "?action=import", {
-      method: "POST",
-      mode: "no-cors",
-      body: JSON.stringify(rows)
-    });
-
-    alert("Import diproses, cek Google Sheets");
-  };
-  reader.readAsText(file);
-}
-
-/* ================= LOAD SISWA ================= */
-function loadSiswa() {
-  resetTombol(); // ⬅️ BUKA TOMBOL SAAT GANTI KELAS
-
-  fetch(API_URL)
-    .then(r => r.json())
-    .then(d => {
-      dataSiswa = d.filter(
-        x => x[0] === jurusan.value && x[1] === kelas.value
-      );
-
-      tabel.querySelector("tbody").innerHTML = dataSiswa
-        .map((s, i) => `
-          <tr>
-            <td>${i + 1}</td>
-            <td>${s[2]}</td>
-            <td>
-              <select id="st${i}">
-                <option>Hadir</option>
-                <option>Sakit</option>
-                <option>Izin</option>
-                <option>Alpha</option>
-                <option>Bolos</option>
-              </select>
-            </td>
-          </tr>
-        `).join("");
-
-      cekKunciAbsen(); // ⬅️ CEK SETELAH DATA MUNCUL
-    });
-}
-
-/* ================= SIMPAN ABSENSI ================= */
+// ================= SIMPAN ABSENSI =================
 function simpanAbsensi() {
-  if (!dataSiswa.length) {
-    alert("Data siswa belum dimuat");
-    return;
-  }
-
   if (!petugas.value) {
     alert("Nama petugas wajib diisi");
     return;
   }
 
-  const btn = document.querySelector(".simpan");
-  btn.disabled = true;
-  btn.innerText = "Absensi Terkunci";
-
-  const payload = dataSiswa.map((s, i) => ({
+  const payload = dataSiswa.map((s,i)=>({
     tanggal: tanggal.value,
     jurusan: jurusan.value,
     kelas: kelas.value,
     nama: s[2],
-    status: document.getElementById("st" + i).value,
+    status: document.getElementById("st"+i).value,
     petugas: petugas.value
   }));
 
@@ -117,70 +69,80 @@ function simpanAbsensi() {
     body: JSON.stringify(payload)
   });
 
-  alert("✅ Absensi tersimpan");
+  alert("Absensi tersimpan");
+  cekKunciAbsen();
 }
 
-/* ================= REKAP ================= */
+// ================= REKAP =================
 function tampilRekap() {
   fetch(`${API_URL}?action=rekap&bulan=${bulan.value}&jurusan=${rekapJurusan.value}&kelas=${rekapKelas.value}`)
-    .then(r => r.json())
-    .then(d => {
-      rekapTable.querySelector("tbody").innerHTML = Object.keys(d)
-        .map(n => `
-          <tr>
-            <td>${n}</td>
-            <td>${d[n].Hadir}</td>
-            <td>${d[n].Sakit}</td>
-            <td>${d[n].Izin}</td>
-            <td>${d[n].Alpha}</td>
-            <td>${d[n].Bolos}</td>
-          </tr>
-        `).join("");
+    .then(r=>r.json())
+    .then(d=>{
+      rekapTable.querySelector("tbody").innerHTML =
+        Object.keys(d).map(n=>`
+        <tr>
+          <td>${n}</td>
+          <td>${d[n].Hadir}</td>
+          <td>${d[n].Sakit}</td>
+          <td>${d[n].Izin}</td>
+          <td>${d[n].Alpha}</td>
+          <td>${d[n].Bolos}</td>
+        </tr>`).join("");
     });
 }
 
-/* ================= EDIT ABSENSI ================= */
-function loadEditAbsen() {
-  fetch(`${API_URL}?action=getAbsen&tanggal=${editTanggal.value}&jurusan=${editJurusan.value}&kelas=${editKelas.value}`)
-    .then(r => r.json())
-    .then(d => {
-      editData = d;
-      editTable.querySelector("tbody").innerHTML = d
-        .map((x, i) => `
-          <tr>
-            <td>${x.nama}</td>
-            <td>
-              <select id="es${i}">
-                <option ${x.status === "Hadir" ? "selected" : ""}>Hadir</option>
-                <option ${x.status === "Sakit" ? "selected" : ""}>Sakit</option>
-                <option ${x.status === "Izin" ? "selected" : ""}>Izin</option>
-                <option ${x.status === "Alpha" ? "selected" : ""}>Alpha</option>
-                <option ${x.status === "Bolos" ? "selected" : ""}>Bolos</option>
-              </select>
-            </td>
-          </tr>
-        `).join("");
+// ================= GRAFIK =================
+function tampilkanGrafik() {
+  fetch(`${API_URL}?action=rekap&bulan=${grafikBulan.value}&jurusan=${grafikJurusan.value}&kelas=${grafikKelas.value}`)
+    .then(r=>r.json())
+    .then(data=>{
+      let total = {Hadir:0,Sakit:0,Izin:0,Alpha:0,Bolos:0};
+      Object.values(data).forEach(d=>{
+        for(let k in total) total[k]+=d[k]||0;
+      });
+
+      const totalSemua = Object.values(total).reduce((a,b)=>a+b,0);
+      const persen = totalSemua ? ((total.Hadir/totalSemua)*100).toFixed(1) : 0;
+
+      persentaseBox.innerHTML = `<b>Kehadiran:</b> ${persen}%`;
+
+      if(chartAbsensi) chartAbsensi.destroy();
+      chartAbsensi = new Chart(grafikAbsensi,{
+        type:"bar",
+        data:{
+          labels:Object.keys(total),
+          datasets:[{label:"Rekap Kehadiran", data:Object.values(total)}]
+        },
+        options:{responsive:true, scales:{y:{beginAtZero:true}}}
+      });
     });
 }
 
-function simpanEditAbsen() {
-  fetch(API_URL + "?action=updateAbsen", {
-    method: "POST",
-    mode: "no-cors",
-    body: JSON.stringify(
-      editData.map((x, i) => ({
-        row: x.row,
-        status: document.getElementById("es" + i).value
-      }))
-    )
-  });
+// ================= DOWNLOAD LAPORAN =================
+function downloadLaporan() {
+  fetch(`${API_URL}?action=harian&tanggal=${lapTanggal.value}&jurusan=${lapJurusan.value}&kelas=${lapKelas.value}`)
+    .then(r=>r.json())
+    .then(data=>{
+      if (!data.length) {
+        alert("Tidak ada data absensi");
+        return;
+      }
 
-  alert("✅ Perubahan disimpan");
-}
+      let html = `<h2>SMKN 1 ROBATAL</h2><h3>Laporan Absensi Harian</h3>
+      <p>${lapTanggal.value} - ${lapJurusan.value} ${lapKelas.value}</p>
+      <table border="1" cellpadding="5" cellspacing="0">
+      <tr><th>No</th><th>Nama</th><th>Status</th></tr>`;
 
-/* ================= EXPORT ================= */
-function exportAbsensi() {
-  fetch(API_URL + "?action=export")
-    .then(r => r.text())
-    .then(url => window.open(url, "_blank"));
+      data.forEach((d,i)=>{
+        html += `<tr><td>${i+1}</td><td>${d.nama}</td><td>${d.status}</td></tr>`;
+      });
+
+      html += "</table>";
+
+      const blob = new Blob([html], {type:"text/html"});
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `Laporan_${lapJurusan.value}_${lapKelas.value}_${lapTanggal.value}.html`;
+      a.click();
+    });
 }
