@@ -161,3 +161,14 @@ canvas {
     width: 100%;
   }
 }
+.header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.logo {
+  width: 70px;
+  height: auto;
+}
