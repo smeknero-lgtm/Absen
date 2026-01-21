@@ -1,13 +1,163 @@
-body{font-family:Arial;background:#f4f6f8;margin:0}
-.container{max-width:1000px;background:#fff;margin:20px auto;padding:20px;border-radius:6px}
-header{display:flex;align-items:center;gap:20px;border-bottom:2px solid #ddd;padding-bottom:10px}
-header img{width:100px}
-.form{margin-top:15px;display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-table{width:100%;margin-top:20px;border-collapse:collapse}
-th,td{border:1px solid #ccc;padding:8px}
-th{background:#eee}
-.simpan{margin-top:15px;padding:12px;width:100%;background:#2c7be5;color:#fff;border:none}
-@media(max-width:768px){
-.form{grid-template-columns:1fr}
-table{display:block;overflow-x:auto}
+:root {
+  --primary: #0d47a1;
+  --secondary: #1976d2;
+  --accent: #e3f2fd;
+  --success: #2e7d32;
+  --danger: #c62828;
+  --bg: #f4f7fb;
+  --card: #ffffff;
+  --text: #263238;
+  --radius: 12px;
+}
+
+* {
+  box-sizing: border-box;
+  font-family: "Segoe UI", Tahoma, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.container {
+  max-width: 1000px;
+  margin: auto;
+  padding: 16px;
+}
+
+/* HEADER */
+h2 {
+  text-align: center;
+  margin: 10px 0 2px;
+  color: var(--primary);
+}
+
+h3 {
+  text-align: center;
+  margin: 0 0 20px;
+  font-weight: normal;
+  color: #555;
+}
+
+/* CARD FORM */
+.form {
+  background: var(--card);
+  padding: 16px;
+  border-radius: var(--radius);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  margin-bottom: 16px;
+}
+
+/* FORM ELEMENT */
+label {
+  display: block;
+  margin-top: 10px;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+input, select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 4px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 0.95rem;
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--secondary);
+}
+
+/* BUTTON */
+button {
+  margin-top: 14px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  background: var(--primary);
+  color: white;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  background: var(--secondary);
+}
+
+button:disabled {
+  background: #b0bec5;
+  cursor: not-allowed;
+}
+
+/* TABLE */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--card);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-top: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+thead {
+  background: var(--primary);
+  color: white;
+}
+
+th, td {
+  padding: 10px;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+tbody tr:nth-child(even) {
+  background: #f8fafc;
+}
+
+/* STATUS COLOR */
+select option[value="Hadir"] { color: var(--success); }
+select option[value="Alpha"], 
+select option[value="Bolos"] { color: var(--danger); }
+
+/* PERCENT BOX */
+#persentaseBox {
+  margin-top: 10px;
+  font-size: 1rem;
+  font-weight: bold;
+  color: var(--success);
+}
+
+/* CANVAS */
+canvas {
+  margin-top: 12px;
+  background: white;
+  padding: 10px;
+  border-radius: var(--radius);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  h2 {
+    font-size: 1.3rem;
+  }
+
+  .container {
+    padding: 10px;
+  }
+
+  table th, table td {
+    font-size: 0.8rem;
+    padding: 8px;
+  }
+
+  button {
+    width: 100%;
+  }
 }
