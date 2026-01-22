@@ -2,23 +2,27 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Absensi Guru Piket SMKN 1 Robatal</title>
+  <title>Absensi Guru Piket SMKN 1 ROBATAL</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="container">
- <div class="header">
-  <img src="logo-smkn1-robatal.png" class="logo">
-  <div>
-    <h2>ABSENSI GURU PIKET</h2>
-    <h3>SMKN 1 ROBATAL</h3>
+
+  <!-- HEADER -->
+  <div class="header">
+    <img src="logo-smkn1-robatal.png" class="logo">
+    <div>
+      <h2>ABSENSI GURU PIKET</h2>
+      <h3>SMKN 1 ROBATAL</h3>
+    </div>
   </div>
-</div>
 
   <!-- INPUT ABSENSI -->
   <section class="form">
+    <h4>Input Absensi Per Kelas</h4>
+
     <label>Tanggal</label>
     <input type="date" id="tanggal" onchange="cekKunciAbsen()">
 
@@ -55,8 +59,8 @@
 
   <hr>
 
-  <!-- REKAP -->
-  <h3>Rekap Bulanan</h3>
+  <!-- REKAP BULANAN -->
+  <h4>Rekap Bulanan Per Kelas</h4>
   <input type="month" id="bulan">
   <select id="rekapJurusan">
     <option>RPL</option><option>DPIB</option><option>AK</option><option>TKR</option>
@@ -75,8 +79,8 @@
 
   <hr>
 
-  <!-- GRAFIK -->
-  <h3>Grafik & Persentase Kehadiran</h3>
+  <!-- GRAFIK BULANAN -->
+  <h4>Grafik & Persentase Kehadiran</h4>
   <input type="month" id="grafikBulan">
   <select id="grafikJurusan">
     <option>RPL</option><option>DPIB</option><option>AK</option><option>TKR</option>
@@ -85,13 +89,14 @@
     <option>X</option><option>XI</option><option>XII</option>
   </select>
   <button onclick="tampilkanGrafik()">Tampilkan Grafik</button>
+
   <div id="persentaseBox"></div>
   <canvas id="grafikAbsensi"></canvas>
 
   <hr>
 
-  <!-- LAPORAN -->
-  <h3>Download Laporan Harian</h3>
+  <!-- LAPORAN HARIAN -->
+  <h4>Laporan Harian Per Kelas</h4>
   <input type="date" id="lapTanggal">
   <select id="lapJurusan">
     <option>RPL</option><option>DPIB</option><option>AK</option><option>TKR</option>
@@ -106,7 +111,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="script.js"></script>
 <script>
-document.getElementById("tanggal").value = new Date().toISOString().slice(0,10);
+  document.getElementById("tanggal").value = new Date().toISOString().slice(0,10);
 </script>
 
 </body>
