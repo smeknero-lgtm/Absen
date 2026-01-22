@@ -95,7 +95,7 @@
 
   <hr>
 
-  <!-- LAPORAN HARIAN -->
+  <!-- LAPORAN PER KELAS -->
   <h4>Laporan Harian Per Kelas</h4>
   <input type="date" id="lapTanggal">
   <select id="lapJurusan">
@@ -105,6 +105,14 @@
     <option>X</option><option>XI</option><option>XII</option>
   </select>
   <button onclick="downloadLaporan()">Download Laporan</button>
+
+  <hr>
+
+  <!-- REKAP SEMUA KELAS -->
+  <h4>Rekap Semua Kelas (1 File + Grafik)</h4>
+  <label>Tanggal</label>
+  <input type="date" id="cetakTanggal">
+  <button onclick="cetakRekapSemua()">Download Rekap Semua Kelas</button>
 
 </div>
 
