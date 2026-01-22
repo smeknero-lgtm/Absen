@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Absensi Guru Piket SMKN 1 ROBATAL</title>
+  <title>Absensi Guru Piket - SMKN 1 Robatal</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
 </head>
@@ -10,7 +10,6 @@
 
 <div class="container">
 
-  <!-- HEADER -->
   <div class="header">
     <img src="logo-smkn1-robatal.png" class="logo">
     <div>
@@ -21,27 +20,20 @@
 
   <!-- INPUT ABSENSI -->
   <section class="form">
-    <h4>Input Absensi Per Kelas</h4>
-
     <label>Tanggal</label>
-    <input type="date" id="tanggal" onchange="cekKunciAbsen()">
+    <input type="date" id="tanggal">
 
     <label>Petugas</label>
     <input type="text" id="petugas" placeholder="Nama Guru Piket">
 
     <label>Jurusan</label>
-    <select id="jurusan" onchange="cekKunciAbsen()">
-      <option>RPL</option>
-      <option>DPIB</option>
-      <option>AK</option>
-      <option>TKR</option>
+    <select id="jurusan">
+      <option>RPL</option><option>DPIB</option><option>AK</option><option>TKR</option>
     </select>
 
     <label>Kelas</label>
-    <select id="kelas" onchange="cekKunciAbsen()">
-      <option>X</option>
-      <option>XI</option>
-      <option>XII</option>
+    <select id="kelas">
+      <option>X</option><option>XI</option><option>XII</option>
     </select>
 
     <button onclick="loadSiswa()">Tampilkan Daftar Siswa</button>
@@ -60,7 +52,7 @@
   <hr>
 
   <!-- REKAP BULANAN -->
-  <h4>Rekap Bulanan Per Kelas</h4>
+  <h3>Rekap Bulanan Per Kelas</h3>
   <input type="month" id="bulan">
   <select id="rekapJurusan">
     <option>RPL</option><option>DPIB</option><option>AK</option><option>TKR</option>
@@ -79,24 +71,8 @@
 
   <hr>
 
-  <!-- GRAFIK BULANAN -->
-  <h4>Grafik & Persentase Kehadiran</h4>
-  <input type="month" id="grafikBulan">
-  <select id="grafikJurusan">
-    <option>RPL</option><option>DPIB</option><option>AK</option><option>TKR</option>
-  </select>
-  <select id="grafikKelas">
-    <option>X</option><option>XI</option><option>XII</option>
-  </select>
-  <button onclick="tampilkanGrafik()">Tampilkan Grafik</button>
-
-  <div id="persentaseBox"></div>
-  <canvas id="grafikAbsensi"></canvas>
-
-  <hr>
-
-  <!-- LAPORAN PER KELAS -->
-  <h4>Laporan Harian Per Kelas</h4>
+  <!-- LAPORAN HARIAN -->
+  <h3>Laporan Harian Per Kelas</h3>
   <input type="date" id="lapTanggal">
   <select id="lapJurusan">
     <option>RPL</option><option>DPIB</option><option>AK</option><option>TKR</option>
@@ -109,17 +85,15 @@
   <hr>
 
   <!-- REKAP SEMUA KELAS -->
-  <h4>Rekap Semua Kelas (1 File + Grafik)</h4>
-  <label>Tanggal</label>
-  <input type="date" id="cetakTanggal">
-  <button onclick="cetakRekapSemua()">Download Rekap Semua Kelas</button>
+  <h3>Rekap Semua Kelas (1 File)</h3>
+  <input type="date" id="rekapSemuaTanggal">
+  <button onclick="downloadRekapSemua()">Download Rekap Semua Kelas</button>
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="script.js"></script>
 <script>
-  document.getElementById("tanggal").value = new Date().toISOString().slice(0,10);
+document.getElementById("tanggal").value = new Date().toISOString().slice(0,10);
 </script>
 
 </body>
