@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbxxhxELvlM9JP_9BlQAfVGf6_w4A_ROMJ9AGR3qvrr7jnQpfkGPsXGBTkdBZLc5gFHA/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxGoSGX7QrVBilAg8SBUtKbt1D3Y6PUYnmwdWP8quLMol1oVOQkv4qnrdbdV6k3txF6/exec";
 
 let dataSiswa = [];
 let chartAbsensi = null;
@@ -37,9 +37,13 @@ function cekKunciAbsen() {
     .then(r => r.json())
     .then(r => {
       const btn = document.querySelector(".simpan");
-      if (r.sudah) {
+
+      if (r.semuaSudah) {
         btn.disabled = true;
-        btn.innerText = "Terkunci";
+        btn.innerText = "Semua Kelas Hari Ini Sudah Terkunci";
+      } else if (r.kelasSudah) {
+        btn.disabled = true;
+        btn.innerText = "Kelas Ini Sudah Diabsen";
       } else {
         btn.disabled = false;
         btn.innerText = "Simpan Absensi";
@@ -67,19 +71,24 @@ function simpanAbsensi() {
     method: "POST",
     mode: "no-cors",
     body: JSON.stringify(payload)
+  }).then(()=>{
+    alert("Absensi kelas berhasil disimpan");
+    cekKunciAbsen();
   });
-
-  alert("Absensi tersimpan");
-  cekKunciAbsen();
 }
 
-// ================= REKAP =================
+// ================= REKAP BULANAN =================
 function tampilRekap() {
   fetch(`${API_URL}?action=rekap&bulan=${bulan.value}&jurusan=${rekapJurusan.value}&kelas=${rekapKelas.value}`)
     .then(r=>r.json())
     .then(d=>{
-      rekapTable.querySelector("tbody").innerHTML =
-        Object.keys(d).map(n=>`
+      const tbody = rekapTable.querySelector("tbody");
+      if (!Object.keys(d).length) {
+        tbody.innerHTML = `<tr><td colspan="6">Tidak ada data</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = Object.keys(d).map(n=>`
         <tr>
           <td>${n}</td>
           <td>${d[n].Hadir}</td>
@@ -91,7 +100,7 @@ function tampilRekap() {
     });
 }
 
-// ================= GRAFIK =================
+// ================= GRAFIK BULANAN =================
 function tampilkanGrafik() {
   fetch(`${API_URL}?action=rekap&bulan=${grafikBulan.value}&jurusan=${grafikJurusan.value}&kelas=${grafikKelas.value}`)
     .then(r=>r.json())
@@ -118,7 +127,7 @@ function tampilkanGrafik() {
     });
 }
 
-// ================= DOWNLOAD LAPORAN =================
+// ================= LAPORAN HARIAN PER KELAS =================
 function downloadLaporan() {
   fetch(`${API_URL}?action=harian&tanggal=${lapTanggal.value}&jurusan=${lapJurusan.value}&kelas=${lapKelas.value}`)
     .then(r=>r.json())
