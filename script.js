@@ -1,6 +1,6 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbxyIvtzKnv0TDN8JYXuYRRoZM7ZTuMEV0qCDuLO6mTs3wl2UOfPLO16y3zV3bdSPrv-/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzLOZDZQc7eBTjgTbyqEFPzCWHK1N3UDFPKN-2ZmeJEWG8xZq5PrRb0V61Zpf9VdOJF/exec";
+
 let dataSiswa = [];
-let chartAbsensi = null;
 
 // ================= LOAD SISWA =================
 function loadSiswa() {
@@ -25,24 +25,6 @@ function loadSiswa() {
             </select>
           </td>
         </tr>`).join("");
-
-      cekKunciAbsen();
-    });
-}
-
-// ================= CEK KUNCI =================
-function cekKunciAbsen() {
-  fetch(`${API_URL}?action=cekAbsen&tanggal=${tanggal.value}&jurusan=${jurusan.value}&kelas=${kelas.value}`)
-    .then(r => r.json())
-    .then(r => {
-      const btn = document.querySelector(".simpan");
-      if (r.kelasSudah) {
-        btn.disabled = true;
-        btn.innerText = "Sudah Diabsen";
-      } else {
-        btn.disabled = false;
-        btn.innerText = "Simpan Absensi";
-      }
     });
 }
 
@@ -69,10 +51,9 @@ function simpanAbsensi() {
   });
 
   alert("Absensi tersimpan");
-  cekKunciAbsen();
 }
 
-// ================= REKAP =================
+// ================= REKAP BULANAN =================
 function tampilRekap() {
   fetch(`${API_URL}?action=rekap&bulan=${bulan.value}&jurusan=${rekapJurusan.value}&kelas=${rekapKelas.value}`)
     .then(r=>r.json())
@@ -90,45 +71,24 @@ function tampilRekap() {
     });
 }
 
-// ================= GRAFIK =================
-function tampilkanGrafik() {
-  fetch(`${API_URL}?action=rekap&bulan=${grafikBulan.value}&jurusan=${grafikJurusan.value}&kelas=${grafikKelas.value}`)
-    .then(r=>r.json())
-    .then(data=>{
-      let total = {Hadir:0,Sakit:0,Izin:0,Alpha:0,Bolos:0};
-      Object.values(data).forEach(d=>{
-        for(let k in total) total[k]+=d[k]||0;
-      });
-
-      const totalSemua = Object.values(total).reduce((a,b)=>a+b,0);
-      const persen = totalSemua ? ((total.Hadir/totalSemua)*100).toFixed(1) : 0;
-      persentaseBox.innerHTML = `<b>Kehadiran:</b> ${persen}%`;
-
-      if(chartAbsensi) chartAbsensi.destroy();
-      chartAbsensi = new Chart(grafikAbsensi,{
-        type:"bar",
-        data:{
-          labels:Object.keys(total),
-          datasets:[{label:"Rekap Kehadiran", data:Object.values(total)}]
-        },
-        options:{responsive:true, scales:{y:{beginAtZero:true}}}
-      });
-    });
-}
-
-// ================= DOWNLOAD LAPORAN =================
+// ================= DOWNLOAD LAPORAN HARIAN =================
 function downloadLaporan() {
-  fetch(`${API_URL}?action=harian&tanggal=${lapTanggal.value}&jurusan=${lapJurusan.value}&kelas=${lapKelas.value}`)
-    .then(r=>r.json())
-    .then(data=>{
-      if (!data.length) {
+  const tgl = lapTanggal.value;
+  const jur = lapJurusan.value;
+  const kel = lapKelas.value;
+
+  fetch(`${API_URL}?action=harian&tanggal=${tgl}&jurusan=${jur}&kelas=${kel}`)
+    .then(r => r.json())
+    .then(data => {
+      if (!data || data.length === 0) {
         alert("Tidak ada data absensi");
         return;
       }
 
-      let html = `<h2>SMKN 1 ROBATAL</h2>
+      let html = `
+      <h2>SMKN 1 ROBATAL</h2>
       <h3>Laporan Absensi Harian</h3>
-      <p>${lapTanggal.value} - ${lapJurusan.value} ${lapKelas.value}</p>
+      <p>${tgl} | ${jur} ${kel}</p>
       <table border="1" cellpadding="5" cellspacing="0">
       <tr><th>No</th><th>Nama</th><th>Status</th></tr>`;
 
@@ -136,12 +96,42 @@ function downloadLaporan() {
         html += `<tr><td>${i+1}</td><td>${d.nama}</td><td>${d.status}</td></tr>`;
       });
 
-      html += "</table>";
+      html += `</table>`;
 
-      const blob = new Blob([html], {type:"text/html"});
+      const blob = new Blob([html], { type: "text/html" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `Laporan_${jur}_${kel}_${tgl}.html`;
+      link.click();
+    });
+}
+
+// ================= DOWNLOAD REKAP SEMUA KELAS =================
+function downloadRekapSemua() {
+  const tgl = document.getElementById("rekapSemuaTanggal").value;
+
+  fetch(`${API_URL}?action=rekapSemua&tanggal=${tgl}`)
+    .then(r => r.json())
+    .then(data => {
+      if (!data || Object.keys(data).length === 0) {
+        alert("Tidak ada data rekap");
+        return;
+      }
+
+      let html = `<h2>REKAP SEMUA KELAS</h2><p>Tanggal: ${tgl}</p>`;
+
+      for (let k in data) {
+        html += `<h3>${k}</h3><ul>`;
+        for (let s in data[k]) {
+          html += `<li>${s}: ${data[k][s]}</li>`;
+        }
+        html += `</ul>`;
+      }
+
+      const blob = new Blob([html], { type:"text/html" });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
-      a.download = `Laporan_${lapJurusan.value}_${lapKelas.value}_${lapTanggal.value}.html`;
+      a.download = `Rekap_Semua_Kelas_${tgl}.html`;
       a.click();
     });
 }
