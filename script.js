@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbxGoSGX7QrVBilAg8SBUtKbt1D3Y6PUYnmwdWP8quLMol1oVOQkv4qnrdbdV6k3txF6/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwNriAVpWkLovFsynYZNGsKQuVjUAT6sLPG_b4GutS3o5lsZ6lQ5zqhRWkCGgGyhKNa/exec";
 
 let dataSiswa = [];
 let chartAbsensi = null;
